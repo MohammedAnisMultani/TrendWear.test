@@ -271,8 +271,8 @@ app.post('/contactus', async(req,res)=>{
             port: 587,
             secure: false, // use STARTTLS (upgrade connection to TLS after connecting)
             auth: {
-                user: `mohammedanismultani@gmail.com`,
-                pass: `scff bvhd sspd pano`,
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS,
                   },
         })
     
