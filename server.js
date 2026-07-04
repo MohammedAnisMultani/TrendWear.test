@@ -27,7 +27,7 @@ const store = new mongodbSession({
 
 const app = express()
 app.use(cors({
-    origin : "https://trend-wear-test-71ti.vercel.app",
+    origin : "https://trend-wear-test-z9so.vercel.app/",
     credentials : true
 })) 
 app.use(express.json())
