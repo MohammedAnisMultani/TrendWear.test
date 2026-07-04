@@ -30,7 +30,7 @@
     // ---------
 
   app.use(cors({
-  origin: ["http://localhost:5173", "https://trend-wear-test-z9so.vercel.app"],
+  origin: ["http://localhost:5173", "https://trend-wear-test-z9so.vercel.app","https://trend-wear-frontend-test.vercel.app"],
   credentials: true
 }));
 
