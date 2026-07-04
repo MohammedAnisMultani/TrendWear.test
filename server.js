@@ -27,11 +27,11 @@ const store = new mongodbSession({
 
 const app = express()
 
-
+// ---------
 
 const allowedOrigins = [
-  "http://localhost:5173",               // local dev
-  "https://trend-wear-test-z9so.vercel.app" // deployed frontend
+  "http://localhost:5173",
+  "https://trend-wear-test-z9so.vercel.app"
 ];
 
 app.use(cors({
@@ -45,23 +45,26 @@ app.use(cors({
   credentials: true
 }));
 
+// ----------
 
 app.use(express.json())
 
-app.use(session({
-  secret: process.env.SECRET_KEY,
-  store: store,
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    httpOnly: true,       // prevents client-side JS from reading the cookie
-    secure: true,         // required on Vercel (HTTPS only)
-    sameSite: "none"    // allows cross-site cookies (frontend + backend on different domains)
-     
-                        // 1 hour (optional)maxAge: 1000 * 60 * 60 
-  }
-}));
+// -------------
 
+app.use(session({
+    secret : process.env.SECRET_KEY,
+    store : store,
+    resave : false,
+    saveUninitialized : false,
+     cookie: {
+    httpOnly: true,
+    secure: true,        // required on Vercel (HTTPS)
+    sameSite: "none"    // allow cross-site cookies
+    // maxAge: 1000 * 60 * 60 // 1 hour
+  }
+}))
+
+// ---------
 
 app.get('/',(req,res)=>{
     console.log("Home page")
