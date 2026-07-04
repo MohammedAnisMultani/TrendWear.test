@@ -26,10 +26,26 @@ const store = new mongodbSession({
 
 
 const app = express()
+
+
+
+const allowedOrigins = [
+  "http://localhost:5173",               // local dev
+  "https://trend-wear-test-z9so.vercel.app" // deployed frontend
+];
+
 app.use(cors({
-    origin : "https://trend-wear-test-z9so.vercel.app/",
-    credentials : true
-})) 
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true
+}));
+
+
 app.use(express.json())
 app.use(session({
     secret : process.env.SECRET_KEY,
