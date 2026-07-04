@@ -47,12 +47,21 @@ app.use(cors({
 
 
 app.use(express.json())
+
 app.use(session({
-    secret : process.env.SECRET_KEY,
-    store : store,
-    resave : false,
-    saveUninitialized : false 
-}))
+  secret: process.env.SECRET_KEY,
+  store: store,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,       // prevents client-side JS from reading the cookie
+    secure: true,         // required on Vercel (HTTPS only)
+    sameSite: "none"    // allows cross-site cookies (frontend + backend on different domains)
+     
+                        // 1 hour (optional)maxAge: 1000 * 60 * 60 
+  }
+}));
+
 
 app.get('/',(req,res)=>{
     console.log("Home page")
