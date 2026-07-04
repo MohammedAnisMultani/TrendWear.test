@@ -59,8 +59,8 @@ app.use(session({
      cookie: {
     httpOnly: true,
     secure: true,        // required on Vercel (HTTPS)
-    sameSite: "none"    // allow cross-site cookies
-    // maxAge: 1000 * 60 * 60 // 1 hour
+    sameSite: "none",    // allow cross-site cookies
+    maxAge: 1000 * 60 * 60
   }
 }))
 
