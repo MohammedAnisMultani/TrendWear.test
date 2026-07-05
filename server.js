@@ -26,7 +26,9 @@
 
 
     const app = express()
-
+    //----------
+    //claude suggestion
+    app.set('trust proxy', 1)   // 👈 add this line
     // ---------
 
   app.use(cors({
