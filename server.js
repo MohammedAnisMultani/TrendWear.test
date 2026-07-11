@@ -100,14 +100,14 @@
 
     
     try {
-        let existingProduct = await cartModel.findOne({_id : _id, userId : userId})
+        let existingProduct = await cartModel.findOne({productId : _id, userId : userId})
         if(existingProduct){
             existingProduct.quantity += 1;
             await existingProduct.save()
         }
         else{
     const cartObj = new cartModel({
-            _id : _id,
+            productId : _id,
             name : name,
             price : price,
             image : image,

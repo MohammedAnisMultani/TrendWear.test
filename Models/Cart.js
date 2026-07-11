@@ -3,6 +3,12 @@ const { default: mongoose } = require("mongoose");
 
 const cartSchema = mongoose.Schema({
 
+    productId: {
+        type : String,
+        required : true
+
+    },
+    
     name : {
         type : String,
         required : true 
