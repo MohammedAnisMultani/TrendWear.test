@@ -27,9 +27,7 @@
 
     const app = express()
     //----------
-    //claude suggestion
-    app.set('trust proxy', 1)   // 👈 add this line
-    // ---------
+  
 
   app.use(cors({
   origin: ["http://localhost:5173", "https://trend-wear-test-z9so.vercel.app","https://trend-wear-frontend-test.vercel.app"],
@@ -80,7 +78,8 @@
     //--------
     app.get('/Cart', isAuth, async(req,res)=> {
     try {
-        const items = await cartModel.find()
+        const userId = req.session.user.userId
+        const items = await cartModel.find({userId:userId})
         console.log(items)
         return res.status(200).json(items)
     } catch (error) {
@@ -94,10 +93,11 @@
         // console.log(req)
         console.log(req.body)
         const {_id, name, price, image, category} = req.body
+        const userId = req.session.user.userId
 
     
     try {
-        let existingProduct = await cartModel.findOne({_id : _id})
+        let existingProduct = await cartModel.findOne({_id : _id, userId : userId})
         if(existingProduct){
             existingProduct.quantity += 1;
             await existingProduct.save()
@@ -109,6 +109,7 @@
             price : price,
             image : image,
             category : category,
+            userId : userId
 
         })
 
@@ -126,9 +127,10 @@
     app.delete('/Cart/:id', isAuth, async(req,res)=>{
 
         const id = req.params.id
+        const userId = req.session.user.userId
         console.log(id)
         try {
-            const deletedItem = await cartModel.findOneAndDelete({_id : id})
+            const deletedItem = await cartModel.findOneAndDelete({_id : id, userId : userId})
             return res.status(200).json('Item deleted successfully',deletedItem)
         } catch (error) {
             return res.status(500).json('Server Error',error)
@@ -140,8 +142,9 @@
     app.put('/Cart/updateQuantity/:id', isAuth, async(req,res)=>{
         
         let {action} = req.body
+        const userId = req.session.user.userId
         try {
-            let item = await cartModel.findOne({_id : req.params.id})
+            let item = await cartModel.findOne({_id : req.params.id, userId : userId})
             if(action == 'inc'){
                 item.quantity += 1;
                 await item.save();
@@ -154,7 +157,7 @@
                     return res.status(200).json('Quantity Updated Successfully')
                 }
                 else{
-                    await cartModel.findOneAndDelete({_id : req.params.id})
+                    await cartModel.findOneAndDelete({_id : req.params.id, userId : userId})
                     return res.status(200).json('Item deleted successfully')
                 }
             }

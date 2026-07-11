@@ -35,3 +35,9 @@ async function connectDB() {
 }
 
 connectDB();
+
+
+------------------
+  //claude suggestion
+    app.set('trust proxy', 1)   // 👈 add this line
+    // ---------

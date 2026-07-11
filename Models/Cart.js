@@ -5,29 +5,34 @@ const cartSchema = mongoose.Schema({
 
     name : {
         type : String,
-        require : true 
+        required : true 
 
     },
 
     price : {
         type : String,
-        require : true 
+        required : true 
     },
 
     image : {
         type : String,
-        require : true 
+        required : true 
     },
 
     category : {
         type : String,
-        require : true 
+        required : true 
     },
 
     quantity : {
         type : Number,
-        require : true,
+        required : true,
         default : 1
+    },
+
+    userId : {
+        type : String,
+        required : true
     }
 
 },
