@@ -315,6 +315,97 @@ app.post("/contactus", async (req, res) => {
   }
 });
 
+// ---------- AI stylist chatbot (Gemini free tier) ----------
+let aiClient;
+async function getAI() {
+  if (!aiClient) {
+    // dynamic import works from a CommonJS file like server.js
+    const { GoogleGenAI } = await import("@google/genai");
+    aiClient = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  }
+  return aiClient;
+}
+
+app.post("/ai/stylist", isAuth, async (req, res) => {
+  const { messages } = req.body;
+  if (!Array.isArray(messages) || messages.length === 0 || messages.length > 10) {
+    return res.status(400).json("Bad Request");
+  }
+
+  // keep only role + short text, and make sure the chat starts and ends with the user
+  const clean = messages.map((m) => ({
+    role: m.role === "assistant" ? "assistant" : "user",
+    content: String(m.content || "").slice(0, 500),
+  }));
+  while (clean.length && clean[0].role !== "user") clean.shift();
+  if (clean.length === 0 || clean[clean.length - 1].role !== "user") {
+    return res.status(400).json("Bad Request");
+  }
+
+  try {
+    const products = await productModel.find({}, "name price category image").lean();
+    const catalog = products
+      .map((p) => `${p._id}|${p.name}|${p.price}|${p.category}`)
+      .join("\n");
+
+    const instructions = `You are the friendly stylist of TrendzWear, an online clothing store.
+Recommend outfits ONLY from the catalog below. Never invent products.
+If the shopper gives a budget, the total price of your picks must not go over it.
+If the message is not about clothing or shopping, politely steer back to styling.
+Reply with ONLY a JSON object, no other text:
+{"reply": "<friendly answer, max 60 words>", "productIds": ["<id>", ...]}
+Use at most 4 ids, each copied exactly from the catalog. Use [] if nothing fits.
+
+CATALOG (id|name|price|category):
+${catalog}`;
+
+    // Gemini uses the roles "user" and "model".
+    // The instructions go in front of the first user message.
+    // Earlier bot replies are re-wrapped as JSON so the bot keeps answering in JSON.
+    const contents = clean.map((m, i) => ({
+      role: m.role === "assistant" ? "model" : "user",
+      parts: [
+        {
+          text:
+            m.role === "assistant"
+              ? JSON.stringify({ reply: m.content, productIds: [] })
+              : i === 0
+                ? `${instructions}\n\nShopper: ${m.content}`
+                : m.content,
+        },
+      ],
+    }));
+
+    const ai = await getAI();
+    const response = await ai.models.generateContent({
+      model: "gemini-3.1-flash-lite",
+      contents,
+    });
+
+    const text = response.text || "";
+    let parsed;
+    try {
+      parsed = JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1));
+    } catch {
+      parsed = { reply: text, productIds: [] };
+    }
+
+    // only return products that really exist in your database
+    const ids = new Set((parsed.productIds || []).map(String));
+    const picked = products.filter((p) => ids.has(String(p._id))).slice(0, 4);
+    const total = picked.reduce((sum, p) => sum + (Number(p.price) || 0), 0);
+
+    return res.status(200).json({
+      reply: String(parsed.reply || "").slice(0, 600),
+      products: picked,
+      total,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json("Stylist is unavailable right now");
+  }
+});
+
 //---------
 
 // app.listen(5000, (req,res)=> {
